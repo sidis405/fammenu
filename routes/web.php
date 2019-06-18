@@ -14,3 +14,9 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::prefix('admin')->group(function () {
+    // Route::get('dashboard', '\MS\Http\Controllers\Admin\AdminController@dashboard');
+    CRUD::resource('restaurants', 'Admin\RestaurantCrudControllerCrudController');
+    CRUD::resource('menus', 'Admin\MenuCrudControllerCrudController');
+});

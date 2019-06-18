@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dish extends Model
 {
+    protected $guarded = ['id'];
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);

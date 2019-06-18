@@ -2,10 +2,15 @@
 
 namespace App;
 
+use Backpack\CRUD\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Menu extends Model
 {
+    use CrudTrait;
+
+    protected $guarded = ['id'];
+
     protected $dates = ['start_at', 'end_at'];
 
     public function restaurant()
