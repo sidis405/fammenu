@@ -9,6 +9,10 @@ class Menu extends Model
 {
     use CrudTrait;
 
+    protected $with = ['dishes'];
+    protected $hidden = ['dishes'];
+    protected $appends = ['total_cal'];
+
     protected $guarded = ['id'];
 
     protected $dates = ['start_at', 'end_at'];
@@ -26,5 +30,13 @@ class Menu extends Model
     public function dishes()
     {
         return $this->belongsToMany(Dish::class);
+    }
+
+    // Accessors
+    // Pippo
+    // getPippoAttribute
+    public function getTotalCalAttribute()
+    {
+        return $this->dishes->pluck('cal')->sum();
     }
 }

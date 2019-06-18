@@ -1,15 +1,8 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+Route::get('test', function () {
+    return App\Menu::first();
+});
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,4 +12,5 @@ Route::prefix('admin')->group(function () {
     // Route::get('dashboard', '\MS\Http\Controllers\Admin\AdminController@dashboard');
     CRUD::resource('restaurants', 'Admin\RestaurantCrudControllerCrudController');
     CRUD::resource('menus', 'Admin\MenuCrudControllerCrudController');
+    CRUD::resource('dishes', 'Admin\DishCrudControllerCrudController');
 });

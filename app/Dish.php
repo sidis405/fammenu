@@ -2,10 +2,13 @@
 
 namespace App;
 
+use Backpack\CRUD\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Dish extends Model
 {
+    use CrudTrait;
+
     protected $guarded = ['id'];
 
     public function restaurant()

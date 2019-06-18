@@ -125,6 +125,12 @@ class MenuCrudControllerCrudController extends CrudController
            'model' => "App\User", // foreign key model
         ]);
 
+        $this->crud->addColumn([
+           'label' => "Cal", // Table column heading
+           'type' => "text",
+           'name' => 'total_cal',
+        ]);
+
         // $this->crud->addColumn([
         //    // n-n relationship (with pivot table)
         //    'label' => "Dishes", // Table column heading
@@ -154,6 +160,27 @@ class MenuCrudControllerCrudController extends CrudController
         }, function ($value) { // if the filter is active
             $this->crud->addClause('where', 'user_id', $value);
         });
+
+        // $this->crud->addFilter(
+        //     [
+        //   'name' => 'cal_range',
+        //   'type' => 'range',
+        //   'label'=> 'Filter Cal',
+        //   'label_from' => 'min',
+        //   'label_to' => 'max'
+        // ],
+        // false,
+        // function ($value) { // if the filter is active
+        //     $range = json_decode($value);
+        //     if ($range->from) {
+        //         logger($this->crud->query);
+        //         $this->crud->addClause('where', 'total_cal', '>=', (float) $range->from);
+        //     }
+        //     if ($range->to) {
+        //         $this->crud->addClause('where', 'total_cal', '<=', (float) $range->to);
+        //     }
+        // }
+        // );
 
         $this->crud->enableExportButtons();
 
