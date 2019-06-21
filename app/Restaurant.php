@@ -11,9 +11,9 @@ class Restaurant extends Model
 
     use CrudTrait;
 
-    public function users()
+    public function hosts()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'restaurant_user', 'restaurant_id', 'user_id');
     }
 
     public function menus()

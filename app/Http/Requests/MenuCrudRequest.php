@@ -27,7 +27,6 @@ class MenuCrudRequest extends FormRequest
         return [
             'name' => 'required|min:5|max:255',
             'price' => 'required',
-            'user_id' => 'required',
             'restaurant_id' => 'required',
             'start_at' => 'required',
             'end_at' => 'required',

@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
                 $menu->dishes()->attach($dishes->where('dish_type_id', 1)->random());
                 $menu->dishes()->attach($dishes->where('dish_type_id', 2)->random());
                 $menu->dishes()->attach($dishes->where('dish_type_id', 3)->random());
+
+                $menu->updateCal();
             }
         }
     }

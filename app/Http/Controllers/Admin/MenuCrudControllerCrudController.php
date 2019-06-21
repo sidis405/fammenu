@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Menu;
 use Backpack\CRUD\CrudPanel;
-
-// VALIDATION: change the requests to match your own file names if you need form validation
 use App\Http\Requests\MenuCrudRequest as StoreRequest;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use App\Http\Requests\MenuCrudRequest as UpdateRequest;
@@ -18,6 +17,9 @@ class MenuCrudControllerCrudController extends CrudController
 {
     public function setup()
     {
+        if (! backpack_user()->hasPermissionTo('Manage Menus', 'web')) {
+            $this->crud->denyAccess(['list', 'create', 'update', 'reorder', 'delete']);
+        }
         /*
         |--------------------------------------------------------------------------
         | CrudPanel Basic Information
@@ -26,6 +28,10 @@ class MenuCrudControllerCrudController extends CrudController
         $this->crud->setModel('App\Menu');
         $this->crud->setRoute(config('backpack.base.route_prefix') . '/menus');
         $this->crud->setEntityNameStrings('menu', 'menus');
+
+        $restaurants = backpack_user()->restaurants->pluck('id')->values()->toArray();
+
+        $this->crud->addClause('whereIn', 'restaurant_id', $restaurants);
 
         /*
         |--------------------------------------------------------------------------
@@ -36,7 +42,7 @@ class MenuCrudControllerCrudController extends CrudController
         // TODO: remove setFromDb() and manually define Fields and Columns
         $this->crud->setFromDb();
 
-        // $this->crud->removeFields([]);
+        $this->crud->removeFields(['user_id', 'cal']);
         // $this->crud->removeColumns([]);
 
 
@@ -47,21 +53,14 @@ class MenuCrudControllerCrudController extends CrudController
            'entity' => 'restaurant',
            'attribute' => 'name',
            'model' => "App\Restaurant",
+           'options'   => (function ($query) {
+               return $query->whereHas('hosts', function ($query) {
+                   $query->where('user_id', backpack_user()->id);
+               })->get();
+           }),
            'wrapperAttributes' => [
-               'class' => 'col-md-4'
+               'class' => 'col-md-6'
            ]
-        ]);
-
-        $this->crud->addField([  // Select2
-           'label' => "User",
-           'type' => 'select2',
-           'name' => 'user_id',
-           'entity' => 'user',
-           'attribute' => 'name',
-           'model' => "App\User",
-           'wrapperAttributes' => [
-                'class' => 'col-md-4'
-            ]
         ]);
 
         $this->crud->addField([   // DateTime
@@ -93,7 +92,7 @@ class MenuCrudControllerCrudController extends CrudController
             'prefix' => "€",
             // 'suffix' => ".00",
             'wrapperAttributes' => [
-                'class' => 'col-md-4'
+                'class' => 'col-md-6'
             ]
         ]);
 
@@ -105,7 +104,10 @@ class MenuCrudControllerCrudController extends CrudController
             'attribute' => 'name', // foreign key attribute that is shown to user
             'model' => "App\Dish", // foreign key model
             'pivot' => true,
-        ]);
+            'options'   => (function ($query) {
+                return $query->where('restaurant_id', Menu::find(request()->segment(3))->restaurant_id)->get();
+            }),
+        ], 'update');
 
         $this->crud->addColumn([
            'label' => "Restaurant", // Table column heading
@@ -125,11 +127,11 @@ class MenuCrudControllerCrudController extends CrudController
            'model' => "App\User", // foreign key model
         ]);
 
-        $this->crud->addColumn([
-           'label' => "Cal", // Table column heading
-           'type' => "text",
-           'name' => 'total_cal',
-        ]);
+        // $this->crud->addColumn([
+        //    'label' => "Cal", // Table column heading
+        //    'type' => "text",
+        //    'name' => 'total_cal',
+        // ]);
 
         // $this->crud->addColumn([
         //    // n-n relationship (with pivot table)
@@ -161,26 +163,25 @@ class MenuCrudControllerCrudController extends CrudController
             $this->crud->addClause('where', 'user_id', $value);
         });
 
-        // $this->crud->addFilter(
-        //     [
-        //   'name' => 'cal_range',
-        //   'type' => 'range',
-        //   'label'=> 'Filter Cal',
-        //   'label_from' => 'min',
-        //   'label_to' => 'max'
-        // ],
-        // false,
-        // function ($value) { // if the filter is active
-        //     $range = json_decode($value);
-        //     if ($range->from) {
-        //         logger($this->crud->query);
-        //         $this->crud->addClause('where', 'total_cal', '>=', (float) $range->from);
-        //     }
-        //     if ($range->to) {
-        //         $this->crud->addClause('where', 'total_cal', '<=', (float) $range->to);
-        //     }
-        // }
-        // );
+        $this->crud->addFilter(
+            [
+          'name' => 'cal_range',
+          'type' => 'range',
+          'label'=> 'Filter Cal',
+          'label_from' => 'min',
+          'label_to' => 'max'
+        ],
+        false,
+        function ($value) { // if the filter is active
+            $range = json_decode($value);
+            if ($range->from) {
+                $this->crud->addClause('where', 'cal', '>=', (float) $range->from);
+            }
+            if ($range->to) {
+                $this->crud->addClause('where', 'cal', '<=', (float) $range->to);
+            }
+        }
+        );
 
         $this->crud->enableExportButtons();
 
@@ -195,6 +196,8 @@ class MenuCrudControllerCrudController extends CrudController
         $redirect_location = parent::storeCrud($request);
         // your additional operations after save here
         // use $this->data['entry'] or $this->crud->entry
+        $this->crud->entry->updateCal();
+
         return $redirect_location;
     }
 
@@ -204,6 +207,8 @@ class MenuCrudControllerCrudController extends CrudController
         $redirect_location = parent::updateCrud($request);
         // your additional operations after save here
         // use $this->data['entry'] or $this->crud->entry
+        $this->crud->entry->updateCal();
+
         return $redirect_location;
     }
 }

@@ -18,6 +18,9 @@ class RestaurantCrudControllerCrudController extends CrudController
 {
     public function setup()
     {
+        if (! backpack_user()->hasPermissionTo('Manage Restaurants', 'web')) {
+            $this->crud->denyAccess(['list', 'create', 'update', 'reorder', 'delete']);
+        }
         /*
         |--------------------------------------------------------------------------
         | CrudPanel Basic Information
@@ -35,6 +38,23 @@ class RestaurantCrudControllerCrudController extends CrudController
 
         // TODO: remove setFromDb() and manually define Fields and Columns
         $this->crud->setFromDb();
+
+        $this->crud->addField([       // Select2Multiple = n-n relationship (with pivot table)
+            'label' => "Hosts",
+            'type' => 'select2_multiple',
+            'name' => 'hosts', // the method that defines the relationship in your Model
+            'entity' => 'hosts', // the method that defines the relationship in your Model
+            'attribute' => 'name', // foreign key attribute that is shown to user
+            'model' => "App\Models\BackpackUser", // foreign key model
+            'options'   => (function ($query) {
+                return $query->orderBy('name', 'ASC')->get()->map(function ($user) {
+                    return $user->hasRole('Host') ? $user : null;
+                })->reject(function ($null) {
+                    return ! $null;
+                });
+            }),
+            'pivot' => true,
+        ]);
 
         // add asterisk for fields that are required in RestaurantCrudControllerRequest
         $this->crud->setRequiredFields(StoreRequest::class, 'create');

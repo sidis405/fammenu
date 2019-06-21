@@ -18,6 +18,9 @@ class DishCrudControllerCrudController extends CrudController
 {
     public function setup()
     {
+        if (! backpack_user()->hasPermissionTo('Manage Dishes', 'web')) {
+            $this->crud->denyAccess(['list', 'create', 'update', 'reorder', 'delete']);
+        }
         /*
         |--------------------------------------------------------------------------
         | CrudPanel Basic Information
@@ -27,6 +30,10 @@ class DishCrudControllerCrudController extends CrudController
         $this->crud->setRoute(config('backpack.base.route_prefix') . '/dishes');
         $this->crud->setEntityNameStrings('dish', 'dishes');
 
+        $restaurants = backpack_user()->restaurants->pluck('id')->values()->toArray();
+
+        $this->crud->addClause('whereIn', 'restaurant_id', $restaurants);
+
         /*
         |--------------------------------------------------------------------------
         | CrudPanel Configuration
@@ -35,6 +42,13 @@ class DishCrudControllerCrudController extends CrudController
 
         // TODO: remove setFromDb() and manually define Fields and Columns
         $this->crud->setFromDb();
+
+        $this->crud->removeFields(['user_id']);
+
+        $this->crud->addField([
+          'name' => 'cal',
+          'wrapperAttributes' => ['class' => 'col-md-4']
+        ]);
 
         $this->crud->addField([  // Select2
            'label' => "Type",
@@ -53,16 +67,11 @@ class DishCrudControllerCrudController extends CrudController
            'entity' => 'restaurant',
            'attribute' => 'name',
            'model' => "App\Restaurant",
-           'wrapperAttributes' => ['class' => 'col-md-4']
-        ]);
-
-        $this->crud->addField([  // Select2
-           'label' => "User",
-           'type' => 'select2',
-           'name' => 'user_id',
-           'entity' => 'user',
-           'attribute' => 'name',
-           'model' => "App\User",
+           'options'   => (function ($query) {
+               return $query->whereHas('hosts', function ($query) {
+                   $query->where('user_id', backpack_user()->id);
+               })->get();
+           }),
            'wrapperAttributes' => ['class' => 'col-md-4']
         ]);
 

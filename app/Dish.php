@@ -11,6 +11,15 @@ class Dish extends Model
 
     protected $guarded = ['id'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($menu) {
+            $menu->user_id = backpack_user()->id;
+        });
+    }
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
