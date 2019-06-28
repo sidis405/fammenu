@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        View::composer(['home', 'restaurants.show'], function ($view) {
+            $favorites = auth()->check() ? auth()->user()->favorites : [];
+
+            return $view->with('favorites', $favorites);
+        });
     }
 
     /**

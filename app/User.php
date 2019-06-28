@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Menu::class);
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Restaurant::class, 'favorites')->withTimestamps();
+    }
 }

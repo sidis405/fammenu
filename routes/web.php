@@ -1,12 +1,6 @@
 <?php
 
-Route::get('test', function () {
-    return App\Menu::first();
-});
-
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'welcome');
 
 Route::prefix('admin')->group(function () {
     // Route::get('dashboard', '\MS\Http\Controllers\Admin\AdminController@dashboard');
@@ -14,3 +8,10 @@ Route::prefix('admin')->group(function () {
     CRUD::resource('menus', 'Admin\MenuCrudControllerCrudController');
     CRUD::resource('dishes', 'Admin\DishCrudControllerCrudController');
 });
+
+Auth::routes();
+
+Route::get('home', 'HomeController@index')->name('home');
+Route::get('search', 'SearchController')->name('search');
+Route::get('restaurants/{restaurant}', 'RestaurantsController@show')->name('restaurants.show');
+Route::post('toggle-favorites/{restaurant}', 'ToggleController')->name('toggle-favorites');

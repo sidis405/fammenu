@@ -4,14 +4,16 @@ namespace App;
 
 use Backpack\CRUD\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Menu extends Model
 {
     use CrudTrait;
 
-    protected $with = ['dishes'];
+    protected $with = ['dishes', 'restaurant'];
     // protected $hidden = ['dishes'];
     // protected $appends = ['total_cal'];
+    protected $appends = ['link'];
 
     protected $guarded = ['id'];
 
@@ -24,6 +26,16 @@ class Menu extends Model
         static::creating(function ($menu) {
             $menu->user_id = backpack_user()->id;
         });
+    }
+
+    public function scopeFromFavorites(Builder $query)
+    {
+        return $query->whereIn('restaurant_id', auth()->user()->favorites->pluck('id')->toArray());
+    }
+
+    public function scopeValid(Builder $query)
+    {
+        return $query->where('start_at', '<=', now())->where('end_at', '>', now());
     }
 
     public function restaurant()
@@ -54,5 +66,10 @@ class Menu extends Model
         $this->update([
           'cal' => $this->fresh()->dishes->pluck('cal')->sum()
         ]);
+    }
+
+    public function getLinkAttribute()
+    {
+        return route('restaurants.show', $this->restaurant);
     }
 }
