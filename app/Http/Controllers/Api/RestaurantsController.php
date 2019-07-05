@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Restaurant;
+use App\Http\Controllers\Controller;
 
 class RestaurantsController extends Controller
 {
     public function show(Restaurant $restaurant, RestaurantsRepository $restaurantsRepo)
     {
-        $restaurant = $restaurantsRepo->show($restaurant);
-
-        return view('restaurants.show', compact('restaurant'));
+        return $restaurantsRepo->show($restaurant);
     }
 }

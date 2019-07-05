@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Menu;
+use App\Repositories\MenuRepository;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected $menusRepo;
+
+    public function __construct(MenuRepository $menusRepo)
     {
         $this->middleware('auth');
+        $this->menusRepo = $menusRepo;
     }
 
     /**
@@ -23,7 +21,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $menus = Menu::with('restaurant', 'dishes.type')->fromFavorites()->valid()->get();
+        $menus = $this->menusRepo->getUserFavorites();
 
         return view('home', compact('menus'));
     }
